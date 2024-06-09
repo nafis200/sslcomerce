@@ -62,9 +62,19 @@ if(save){
 })
 
 app.post('/success-payment',async(req,res)=>{
-     const successData = req.body
-     console.log('successData',successData)
-     
+  const successData = req.body 
+  if(successData.status !== "VALID"){
+   throw new Error("unauthorized,payment","invalid payment")
+  }
+ //  update the database 
+ const query = {
+   paymnetId: successData.tran_id
+ }
+ const update = {
+    $set:{
+      status:"success",
+    }
+ }
 })
 
 // 
