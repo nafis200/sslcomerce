@@ -3,17 +3,20 @@
 app.use(express.urlencoded())
 const { default: axios } = require('axios'); 
 
+// if success hit the backend and check otherthings 
+// if wrong goto fronted page
 
 app.post('/sslComerece',async(req,res)=>{
   const user = req.body 
+  const tranId = new ObjectId().toString()
   const initiatedata = {
     store_id:"abcco66659d6617872",
     store_passwd:"abcco66659d6617872@ssl",
     total_amount:100,
     currency:"BDT",
-    tran_id:"REF123",
+    tran_id:tranId,
     success_url:"http://localhost:5000/success-payment",
-    fail_url:"http://yoursite.com/fail.php&",
+    fail_url:"http://localhost:5173/failure",
     cancel_url:"http://yoursite.com/cancel.php&",
     cus_name:"Customer Name",
     cus_email:"cust@yahoo.com&",
@@ -46,8 +49,8 @@ const response = await axios({
 })
 
 const saveData = {
-   paymnetId:response.data.tran_id,
-   amount:response.data.total_amount,
+   paymnetId:tranId,
+   amount:200,
    status:"pending"
 }
 
@@ -62,19 +65,21 @@ if(save){
 })
 
 app.post('/success-payment',async(req,res)=>{
-  const successData = req.body 
-  if(successData.status !== "VALID"){
-   throw new Error("unauthorized,payment","invalid payment")
+   const successData = req.body 
+   if(successData.status !== "VALID"){
+    throw new Error("unauthorized,payment","invalid payment")
+   }
+  //  update the database 
+  const query = {
+    paymnetId: successData.tran_id
   }
- //  update the database 
- const query = {
-   paymnetId: successData.tran_id
- }
- const update = {
-    $set:{
-      status:"success",
-    }
- }
-})
+  const update = {
+     $set:{
+       status:"success",
+     }
+  }
+  res.redirect('http://localhost:5173/success')
+    })
+
 
 // 
